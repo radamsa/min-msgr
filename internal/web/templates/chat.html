@@ -1,0 +1,23 @@
+{{template "head" .}}
+<div class="chat-header">
+	<h1>{{.Chat.Label}}</h1>
+	<p class="muted">{{.User.PublicID}} · лимиты: {{.Chat.DaysLimit}} дн., {{.Chat.BytesLimit}} байт</p>
+</div>
+
+<div id="chat"
+	data-chat-id="{{.Chat.ID}}"
+	data-max-bytes="{{.MaxMessageBytes}}">
+	<button type="button" id="load-older" hidden>Загрузить старые сообщения</button>
+	<div id="messages" class="messages"></div>
+	<p id="chat-status" class="muted">Подключение…</p>
+	<form id="send-form" autocomplete="off">
+		<label for="message-body">Сообщение</label>
+		<textarea id="message-body" name="body" rows="4" required></textarea>
+		<div class="actions">
+			<button type="submit" id="send-button">Отправить</button>
+			<span class="muted">CommonMark: HTML, ссылки и картинки запрещены.</span>
+		</div>
+	</form>
+</div>
+<script src="/static/chat.js"></script>
+{{template "foot" .}}

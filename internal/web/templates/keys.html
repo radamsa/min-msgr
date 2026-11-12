@@ -1,0 +1,86 @@
+{{template "head" .}}
+<h1>Ключи и архивы</h1>
+
+{{if .Error}}<p class="error">{{.Error}}</p>{{end}}
+
+<div class="card">
+	<h2>Настройки пользователя</h2>
+	<p class="muted">
+		Лимит ключей: {{.MaxKeys}} · макс. дней хранения: {{.MaxDaysLimit}} ·
+		макс. байт на чат: {{.MaxBytesPerChat}}<br>
+		Общий лимит истории: {{.UsedBytesPerUser}} / {{.MaxTotalBytesPerUser}} байт
+		(изменяется только админом)
+	</p>
+</div>
+
+<div class="card">
+	<h2>Новый ключ</h2>
+	<p class="muted">1 ключ = 1 чат. Метка ключа становится именем чата и не меняется. Лимит: {{.MaxKeys}}.</p>
+	<form method="post" action="/keys">
+		<label for="label">Метка чата</label><br>
+		<input id="label" name="label" maxlength="100" required>
+		<button type="submit">Создать ключ</button>
+	</form>
+</div>
+
+<h2>Чаты</h2>
+{{if .Chats}}
+<div class="card">
+	<table>
+		<thead>
+			<tr><th>Чат</th><th>Создан</th><th>Действия</th></tr>
+		</thead>
+		<tbody>
+			{{range .Chats}}
+			<tr>
+				<td><strong>{{.Label}}</strong></td>
+				<td class="muted">{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
+				<td>
+					<form method="post" action="/keys/{{.ChatID}}/limits" class="inline limits-form">
+						<label>дней <input name="days_limit" type="number" min="1" max="{{$.MaxDaysLimit}}" value="{{.DaysLimit}}" class="limit-input"></label>
+						<label>байт <input name="bytes_limit" type="number" min="1" max="{{$.MaxBytesPerChat}}" value="{{.BytesLimit}}" class="limit-input"></label>
+						<button type="submit">Сохранить</button>
+					</form>
+					<p class="muted">максимумы: {{$.MaxDaysLimit}} дн., {{$.MaxBytesPerChat}} байт</p>
+				</td>
+				<td class="actions">
+					<form method="post" action="/keys/{{.ChatID}}/rotate" class="inline">
+						<button type="submit">Ротировать ключ</button>
+					</form>
+					<form method="post" action="/keys/{{.ChatID}}/revoke" class="inline"
+						onsubmit="return confirm('Отозвать ключ? Чат будет архивирован и удалён.');">
+						<button type="submit">Отозвать</button>
+					</form>
+				</td>
+			</tr>
+			{{end}}
+		</tbody>
+	</table>
+</div>
+{{else}}
+<p class="muted">Чатов пока нет.</p>
+{{end}}
+
+<h2>Архивы</h2>
+{{if .Archives}}
+<div class="card">
+	<table>
+		<thead>
+			<tr><th>Чат</th><th>Удалён</th><th>Доступен до</th><th></th></tr>
+		</thead>
+		<tbody>
+			{{range .Archives}}
+			<tr>
+				<td><strong>{{.Label}}</strong></td>
+				<td class="muted">{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
+				<td class="muted">{{.ExpiresAt.Format "2006-01-02 15:04"}}</td>
+				<td><a href="/archives/{{.ID}}">Скачать .zip</a></td>
+			</tr>
+			{{end}}
+		</tbody>
+	</table>
+</div>
+{{else}}
+<p class="muted">Архивов нет. Архив создаётся при отзыве ключа и хранится 30 дней.</p>
+{{end}}
+{{template "foot" .}}

@@ -1,0 +1,26 @@
+services:
+  # Единственная инфраструктурная зависимость проекта — PostgreSQL.
+  # Порт 55432 (не 5432), чтобы не конфликтовать с локальной установкой.
+  # Учётные данные согласованы с DATABASE_URL по умолчанию в Makefile
+  # и .env.example. `make up` ждёт healthcheck перед возвратом.
+  postgres:
+    image: postgres:17-alpine
+    container_name: min-msgr-postgres
+    environment:
+      POSTGRES_USER: minmsgr
+      POSTGRES_PASSWORD: minmsgr
+      POSTGRES_DB: minmsgr
+    ports:
+      - "55432:5432"
+    volumes:
+      # Данные переживают `make down`; `make down-clean` удаляет их вместе
+      # с томом.
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U minmsgr -d minmsgr"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:

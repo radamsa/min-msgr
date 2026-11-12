@@ -1,0 +1,10 @@
+{{template "head" .}}
+<div class="card">
+	<h1>min-msgr</h1>
+	<p>Вы вошли как <strong>{{.User.PublicID}}</strong>{{if .User.IsAdmin}} <span class="muted">(админ)</span>{{end}}.</p>
+	<p class="muted">Список чатов и WebSocket появятся на следующем этапе.</p>
+	<form method="post" action="/logout">
+		<button type="submit">Выйти</button>
+	</form>
+</div>
+{{template "foot" .}}

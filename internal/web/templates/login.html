@@ -1,0 +1,14 @@
+{{template "head" .}}
+<div class="card">
+	<h1>min-msgr</h1>
+	<p class="muted">Войдите, чтобы продолжить.</p>
+	{{if .Error}}<p class="error">{{.Error}}</p>{{end}}
+	{{if .Providers}}
+		{{range .Providers}}
+		<a class="provider" href="/auth/{{.Name}}">Войти через {{.Title}}</a>
+		{{end}}
+	{{else}}
+	<p class="error">OAuth-провайдеры не настроены.</p>
+	{{end}}
+</div>
+{{template "foot" .}}

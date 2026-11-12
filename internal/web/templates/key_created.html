@@ -1,0 +1,9 @@
+{{template "head" .}}
+<h1>Ключ создан</h1>
+<div class="card">
+	<p>Чат <strong>{{.Label}}</strong> готов. Скопируйте ключ сейчас — он показывается один раз.</p>
+	<code class="key">{{.PlainKey}}</code>
+	<p class="muted">Используйте его как Bearer-токен в <code>/api/v1/messages</code>.</p>
+	<p><a href="/keys">Вернуться к ключам</a></p>
+</div>
+{{template "foot" .}}

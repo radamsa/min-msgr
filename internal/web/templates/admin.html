@@ -1,0 +1,113 @@
+{{template "head" .}}
+<h1>Админ-панель</h1>
+
+{{if .Error}}<p class="error">{{.Error}}</p>{{end}}
+
+<h2>Глобальные лимиты</h2>
+<div class="card">
+	<form method="post" action="/admin/settings" class="limits-form">
+		<label>ключей на пользователя
+			<input name="max_keys_per_user" type="number" min="1" value="{{.Settings.MaxKeysPerUser}}" class="limit-input">
+		</label>
+		<label>макс. дней хранения
+			<input name="max_days_limit" type="number" min="1" value="{{.Settings.MaxDaysLimit}}" class="limit-input">
+		</label>
+		<label>макс. байт на чат
+			<input name="max_bytes_per_chat" type="number" min="1" value="{{.Settings.MaxBytesPerChat}}" class="limit-input">
+		</label>
+		<label>общий байт на пользователя
+			<input name="max_total_bytes_per_user" type="number" min="1" value="{{.Settings.MaxTotalBytesPerUser}}" class="limit-input">
+		</label>
+		<button type="submit">Сохранить</button>
+	</form>
+</div>
+
+<h2>Пользователи</h2>
+<div class="card">
+	<table>
+		<thead>
+			<tr><th>Пользователь</th><th>Чаты</th><th>Действия</th></tr>
+		</thead>
+		<tbody>
+			{{range .Users}}
+			<tr>
+				<td>
+					<strong>{{.PublicID}}</strong>
+					{{if .IsAdmin}}<span class="muted">(админ)</span>{{end}}
+					{{if .IsBlocked}}<span class="error">(заблокирован)</span>{{end}}
+				</td>
+				<td class="muted">{{.ChatCount}}</td>
+				<td class="actions">
+					{{if .IsBlocked}}
+					<form method="post" action="/admin/users/{{.ID}}/unblock" class="inline">
+						<button type="submit">Разблокировать</button>
+					</form>
+					{{else}}
+					<form method="post" action="/admin/users/{{.ID}}/block" class="inline"
+						onsubmit="return confirm('Заблокировать {{.PublicID}}? Сессии будут удалены.');">
+						<button type="submit">Заблокировать</button>
+					</form>
+					{{end}}
+					<form method="post" action="/admin/users/{{.ID}}/delete" class="inline"
+						onsubmit="return confirm('Удалить {{.PublicID}} со всеми чатами, ключами и сообщениями?');">
+						<button type="submit">Удалить</button>
+					</form>
+				</td>
+			</tr>
+			{{end}}
+		</tbody>
+	</table>
+</div>
+
+<h2>Переопределения лимитов</h2>
+{{if .Overrides}}
+<div class="card">
+	<table>
+		<thead>
+			<tr><th>Пользователь</th><th>Ключи</th><th>Дни</th><th>Байт/чат</th><th>Общих байт</th><th></th></tr>
+		</thead>
+		<tbody>
+			{{range .Overrides}}
+			<tr>
+				<td>{{.UserID}}</td>
+				<td>{{if .MaxKeysPerUser}}{{.MaxKeysPerUser}}{{else}}<span class="muted">—</span>{{end}}</td>
+				<td>{{if .MaxDaysLimit}}{{.MaxDaysLimit}}{{else}}<span class="muted">—</span>{{end}}</td>
+				<td>{{if .MaxBytesPerChat}}{{.MaxBytesPerChat}}{{else}}<span class="muted">—</span>{{end}}</td>
+				<td>{{if .MaxTotalBytesPerUser}}{{.MaxTotalBytesPerUser}}{{else}}<span class="muted">—</span>{{end}}</td>
+				<td>
+					<form method="post" action="/admin/users/{{.UserID}}/override/delete" class="inline">
+						<button type="submit">Удалить</button>
+					</form>
+				</td>
+			</tr>
+			{{end}}
+		</tbody>
+	</table>
+</div>
+{{else}}
+<p class="muted">Переопределений нет — действуют глобальные лимиты.</p>
+{{end}}
+
+<h2>Переопределение для пользователя</h2>
+<div class="card">
+	<form method="post" action="/admin/override" class="limits-form">
+		<label>ID пользователя
+			<input name="user_id" type="number" min="1" required class="limit-input">
+		</label>
+		<label>ключей (пусто — глобальный)
+			<input name="max_keys_per_user" type="number" min="1" class="limit-input">
+		</label>
+		<label>дней
+			<input name="max_days_limit" type="number" min="1" class="limit-input">
+		</label>
+		<label>байт/чат
+			<input name="max_bytes_per_chat" type="number" min="1" class="limit-input">
+		</label>
+		<label>общих байт
+			<input name="max_total_bytes_per_user" type="number" min="1" class="limit-input">
+		</label>
+		<button type="submit">Сохранить</button>
+	</form>
+	<p class="muted">ID виден в списке пользователей. Пустые поля сбрасываются на глобальные значения.</p>
+</div>
+{{template "foot" .}}

@@ -1,0 +1,38 @@
+{{template "head" .}}
+<h1>Чаты</h1>
+{{if .Chats}}
+<div class="card">
+	<table>
+		<thead>
+			<tr><th>Чат</th><th>Последнее сообщение</th><th></th></tr>
+		</thead>
+		<tbody>
+			{{range .Chats}}
+			<tr>
+				<td>
+					<strong><a href="/chats/{{.ChatID}}">{{.Label}}</a></strong><br>
+					<span class="muted">лимиты: {{.DaysLimit}} дн., {{.BytesLimit}} байт</span>
+				</td>
+				<td>
+					{{if .LastMessageAt}}
+						<span class="muted">{{.LastAuthor}}</span><br>
+						{{.LastMessageAt.Format "2006-01-02 15:04"}}
+					{{else}}
+						<span class="muted">Сообщений пока нет</span>
+					{{end}}
+				</td>
+				<td class="actions">
+					<a href="/chats/{{.ChatID}}">Открыть чат</a>
+					<a href="/keys">Управление ключом</a>
+				</td>
+			</tr>
+			{{end}}
+		</tbody>
+	</table>
+</div>
+{{else}}
+<div class="card">
+	<p class="muted">Чатов пока нет. Создайте API-ключ на странице <a href="/keys">«Ключи и архивы»</a>.</p>
+</div>
+{{end}}
+{{template "foot" .}}
