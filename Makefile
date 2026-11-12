@@ -3,21 +3,21 @@ DATABASE_URL          ?= postgres://minmsgr:minmsgr@localhost:55432/minmsgr?sslm
 TEST_DATABASE_URL     ?= postgres://minmsgr:minmsgr@localhost:55432/minmsgr?sslmode=disable
 POSTGRES_PORT         ?= 55432
 
-.PHONY: help up down down-clean logs psql build build-linux test test-integration test-coverage vet fmt run clean
+.PHONY: help up down down-clean logs logs-app stats psql image build build-linux test test-integration test-coverage vet fmt run clean
 
 ## help: список целей с описанием
 help:
 	@grep -E '^## ' $(MAKEFILE_LIST) | sed 's/^## /make /' | column -t -s ':'
 
-## up: поднять PostgreSQL (docker compose, ждёт healthcheck)
+## up: собрать образ и поднять весь стек (PostgreSQL + сервис)
 up:
-	docker compose up -d --wait postgres
+	docker compose up -d --build --wait
 
-## down: остановить PostgreSQL (данные в томе сохраняются)
+## down: остановить стек (данные в томах сохраняются)
 down:
 	docker compose down
 
-## down-clean: остановить PostgreSQL и удалить том с данными
+## down-clean: остановить стек и удалить тома с данными
 down-clean:
 	docker compose down -v
 
@@ -25,9 +25,21 @@ down-clean:
 logs:
 	docker compose logs -f postgres
 
+## logs-app: логи сервиса
+logs-app:
+	docker compose logs -f app
+
+## stats: потребление ресурсов контейнерами (cpu, memory, io)
+stats:
+	docker compose stats
+
 ## psql: интерактивный psql в контейнере
 psql:
 	docker compose exec postgres psql -U minmsgr -d minmsgr
+
+## image: собрать Docker-образ сервиса
+image:
+	docker compose build app
 
 ## build: собрать сервер и утилиты в ./bin
 build:
@@ -61,7 +73,7 @@ vet:
 fmt:
 	gofmt -w .
 
-## run: запустить сервер (нужен поднятый PostgreSQL - make up)
+## run: запустить сервер локально (нужна БД - docker compose up -d --wait postgres)
 run:
 	DATABASE_URL='$(DATABASE_URL)' go run ./cmd/min-msgr
 

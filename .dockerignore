@@ -1,0 +1,11 @@
+# В образ попадает только то, что нужно для сборки: cmd/, internal/, go.mod.
+.git
+.env
+/data
+/bin
+/coverage.out
+/coverage.html
+*.md
+compose.yaml
+Dockerfile
+.dockerignore

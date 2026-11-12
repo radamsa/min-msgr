@@ -1,3 +1,5 @@
+name: min-msgr
+
 services:
   # Единственная инфраструктурная зависимость проекта — PostgreSQL.
   # Порт 55432 (не 5432), чтобы не конфликтовать с локальной установкой.
@@ -22,5 +24,41 @@ services:
       timeout: 3s
       retries: 20
 
+  # Сам сервис min-msgr: HTTP + WebSocket + retention-крон в одном бинарнике.
+  # Миграции применяются при старте автоматически (db.Migrate).
+  # Переменные OAuth-провайдеров (OAUTH_*_CLIENT_ID/SECRET) передаются из
+  # окружения/`.env`, если заданы; без них сервис работает, но вход в веб
+  # недоступен.
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: min-msgr-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://minmsgr:minmsgr@postgres:5432/minmsgr?sslmode=disable
+      HTTP_ADDR: ":8080"
+      ARCHIVES_DIR: /app/data/archives
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SESSION_TTL: ${SESSION_TTL:-720h}
+      RETENTION_INTERVAL: ${RETENTION_INTERVAL:-1h}
+      MAX_MESSAGE_BYTES: ${MAX_MESSAGE_BYTES:-65536}
+      OAUTH_GITHUB_CLIENT_ID: ${OAUTH_GITHUB_CLIENT_ID:-}
+      OAUTH_GITHUB_CLIENT_SECRET: ${OAUTH_GITHUB_CLIENT_SECRET:-}
+      OAUTH_GOOGLE_CLIENT_ID: ${OAUTH_GOOGLE_CLIENT_ID:-}
+      OAUTH_GOOGLE_CLIENT_SECRET: ${OAUTH_GOOGLE_CLIENT_SECRET:-}
+      OAUTH_YANDEX_CLIENT_ID: ${OAUTH_YANDEX_CLIENT_ID:-}
+      OAUTH_YANDEX_CLIENT_SECRET: ${OAUTH_YANDEX_CLIENT_SECRET:-}
+    ports:
+      - "8080:8080"
+    volumes:
+      # Архивы чатов — на локальной ФС, переживают пересоздание контейнера.
+      - archives:/app/data/archives
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  archives:
